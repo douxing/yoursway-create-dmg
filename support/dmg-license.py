@@ -1,4 +1,6 @@
 #! /usr/bin/env python
+# -*- coding: utf8 -*-
+
 """
 This script adds a license file to a DMG. Requires Xcode and a plain ascii text
 license file.
@@ -35,7 +37,9 @@ class Path(str):
         return self
 
     def __exit__(self, type, value, traceback):
+        # comment below out to see the temp file
         os.unlink(self)
+        # print 'no delete'
 
 
 def mktemp(dir=None, suffix=''):
@@ -44,12 +48,20 @@ def mktemp(dir=None, suffix=''):
     return Path(filename)
 
 
+# @see http://www.owsiak.org/?p=700
+# but relace """data 'LPic' (5000) ... """ part with the full code
+# @see https://github.com/andreyvit/yoursway-create-dmg
+
 def main(options, args):
     dmgFile, license = args
     with mktemp('.') as tmpFile:
+        print 'tmpFile: '
+        print tmpFile
         with open(tmpFile, 'w') as f:
+            # all languages added
             f.write("""data 'LPic' (5000) {
     $"0002 0011 0003 0001 0000 0000 0002 0000"
+    $"0008 0003 0000 0001 0004 0000 0004 0005"
     $"0000 000E 0006 0001 0005 0007 0000 0007"
     $"0008 0000 0047 0009 0000 0034 000A 0001"
     $"0035 000B 0001 0020 000C 0000 0011 000D"
@@ -57,32 +69,27 @@ def main(options, args):
     $"0010 0000 000B 000E 0000"
 };\n\n""")
             with open(license, 'r') as l:
-                f.write('data \'TEXT\' (5002, "English") {\n')
+                f.write('data \'TEXT\' (5010, "Simplified Chinese") {\n')
                 for line in l:
                     if len(line) < 1000:
-                        f.write('    "' + line.strip().replace('"', '\\"') +
-                                '\\n"\n')
+                        f.write('    "' + line.strip().replace('"', '\\"').decode("utf8").encode("gbk") + '\\n"\n')
                     else:
                         for liner in line.split('.'):
                             f.write('    "' +
-                                    liner.strip().replace('"', '\\"') +
-                                    '. \\n"\n')
+                                    liner.strip().replace('"', '\\"').decode("utf8").encode("gbk") + '. \\n"\n')
                 f.write('};\n\n')
-            f.write("""resource 'STR#' (5002, "English") {
-    {
-        "English",
-        "Agree",
-        "Disagree",
-        "Print",
-        "Save...",
-        "IMPORTANT - By clicking on the \\"Agree\\" button, you agree "
-        "to be bound by the terms of the License Agreement.",
-        "Software License Agreement",
-        "This text cannot be saved. This disk may be full or locked, or the "
-        "file may be locked.",
-        "Unable to print. Make sure you have selected a printer."
-    }
-};""")
+
+            f.write("""data 'STR#' (5010, "Simplified Chinese") {
+    $"0006 1253 696D 706C 6966 6965 6420 4368"            /* ...Simplified Ch */
+    $"696E 6573 6504 CDAC D2E2 06B2 BBCD ACD2"            /* inese.Õ¨“‚.≤ªÕ¨“ */
+    $"E204 B4F2 D3A1 06B4 E6B4 A2A1 AD54 C8E7"            /* ‚.¥Ú”°.¥Ê¥¢°≠T»Á */
+    $"B9FB C4FA CDAC D2E2 B1BE D0ED BFC9 D0AD"            /* π˚ƒ˙Õ¨“‚±æ–Ìø…–≠ */
+    $"D2E9 B5C4 CCF5 BFEE A3AC C7EB B0B4 A1B0"            /* “ÈµƒÃıøÓ£¨«Î∞¥°∞ */
+    $"CDAC D2E2 A1B1 C0B4 B0B2 D7B0 B4CB C8ED"            /* Õ¨“‚°±¿¥∞≤◊∞¥À»Ì */
+    $"BCFE A1A3 C8E7 B9FB C4FA B2BB CDAC D2E2"            /* º˛°£»Áπ˚ƒ˙≤ªÕ¨“‚ */
+    $"A3AC C7EB B0B4 A1B0 B2BB CDAC D2E2 A1B1"            /* £¨«Î∞¥°∞≤ªÕ¨“‚°± */
+    $"A1A3"   
+};\n\n""")
         os.system('/usr/bin/hdiutil unflatten -quiet "%s"' % dmgFile)
         os.system('%s "%s/"*.r %s -a -o "%s"' %
                   (options.rez, options.flat_carbon, tmpFile, dmgFile))

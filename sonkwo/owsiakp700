@@ -1,0 +1,53 @@
+1. Download the slas_for_udifs_1.0.dmg from Apple’s Developer page (you can use free developer account for that)
+
+Go to https://developer.apple.com/downloads/index.action, in Search field type in “SLAS” and download the DMG file (Software Licensing for UDIF)
+
+2. Mount the slas_for_udifs_1.0.dmg image – simply double click it. You will find two files there: SLA Instructions.rtf and SLAResources
+
+3. Open Terminal and execute following commands
+
+cd /Volumes/SLAs_for_UDIFs_1.0
+DeRez SLAResources > /tmp/sla.r
+Note! It may turn out that you have to download “Command Line Tools for Xcode” in case you have Mac with OS X Lion preinstalled.
+
+4. This file – /tmp/sla.r – is a resources file with license definition. Your license will be based on this file
+
+5. Open /tmp/sla.r and change it according to your needs
+
+Basically, you can leave following sections:
+
+data 'TMPL' (128, "LPic") {
+  /* leave the content as is */
+}
+
+data 'LPic' (5000) {
+  /* leave the content as is */
+}
+
+data 'STR#' (5000, "English buttons") {
+  /* leave the content as is */
+}
+
+data 'STR#' (5002, "English") {
+  /* leave the content as is */
+}
+
+data 'TEXT' (5000, "English SLA") {
+  "This is the place where you want to\n"
+  "add your license\n"
+}
+
+data 'styl' (5000, "English SLA") {
+  /* leave the content as is */
+}
+6. Unflatten image file with your app installer
+
+hdiutil unflatten your_image_file.dmg
+Note! If you don’t know how to build Disk Image, check this post: http://www.owsiak.org/?p=683
+
+7. Add license resources
+
+Rez -a /tmp/sla.r -o your_image_file.dmg
+8. Flatten your image file
+
+hdiutil flatten your_image_file.dmg
