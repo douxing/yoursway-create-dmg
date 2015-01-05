@@ -11,4 +11,4 @@ test -f SonkwoInstaller.dmg && rm SonkwoInstaller.dmg
 --app-drop-link 495 229 \
 --eula sonkwo/eula.txt \
 SonkwoInstaller.dmg \
-~/my
+~/projects/sonkwodist
